@@ -1,2 +1,2 @@
 # PostAPI
-Repository for the Post microservice of the Sublime App
+Repository for the Post microservice of the Sublime App.
