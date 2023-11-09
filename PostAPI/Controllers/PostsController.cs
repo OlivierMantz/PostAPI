@@ -114,7 +114,7 @@ namespace PostAPI.Controllers
             return NoContent();
         }
 
-        
+
         // DELETE: api/Posts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(long id)
