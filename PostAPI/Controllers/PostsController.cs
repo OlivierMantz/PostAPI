@@ -10,142 +10,124 @@ using PostAPI.Models;
 using PostAPI.Models.DTOs;
 using PostAPI.Services;
 
+using PostAPI.Utilities;
+
 namespace PostAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class PostsController : ControllerBase
     {
-        private readonly PostContext _context;
+        private readonly IPostService _postService;
 
-        public PostsController(PostContext context)
+        public PostsController(IPostService postService)
         {
-            _context = context;
+            _postService = postService;
         }
-        private static bool CheckInputInvalid(PostDTO postDTO) => postDTO == null || string.IsNullOrWhiteSpace(postDTO.Title) ||
-                string.IsNullOrWhiteSpace(postDTO.Description) ||
-                postDTO.AuthorId == null;
 
-        private static PostDTO PostToDTO(Post post) =>
-           new()
-           {
-               Id = post.Id,
-               Title = post.Title,
-               Description = post.Description,
-               AuthorId = post.AuthorId
-           };
+        private static PostDTO PostToDto(Post post)
+        {
+            var postDto = new PostDTO
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description,
+                AuthorId = post.AuthorId
+            };
+            return postDto;
+        }
+
         // GET: api/Posts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PostDTO>>> GetPosts()
+        public async Task<ActionResult<List<PostDTO>>> GetPosts()
         {
-            return await _context.Post
-                .Select(x => PostToDTO(x))
-                .ToListAsync();
+            var posts = await _postService.GetPostsAsync();
+            var postDtos = posts.Select(PostToDto).ToList();
+            return Ok(postDtos);
         }
 
         // GET: api/Posts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<PostDTO>> GetPost(long id)
         {
-            if (_context.Post == null)
+            if (id < 0)
             {
-                return NotFound();
-            }
-            var post = await _context.Post.FindAsync(id);
-
-            if (post == null)
-            {
-                return NotFound();
+                return BadRequest("Invalid id parameter. The id must be a positive number.");
             }
 
-            return PostToDTO(post);
-        }
+            var user = await _postService.GetPostByIdAsync(id);
 
-        // PUT: api/Posts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPost(long id, PostDTO postDTO)
-        {
-            if (id != postDTO.Id)
+            if (user == null)
             {
-                return BadRequest();
+                return NotFound("Post not found.");
             }
 
-            _context.Entry(postDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PostExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            var userDto = PostToDto(user);
+            return Ok(userDto);
         }
 
         // POST: api/Posts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<PostDTO>> PostPost(PostDTO postDTO)
+        public async Task<ActionResult<PostDTO>> PostPost(PostDTO postDto)
         {
-            if (_context.Post == null)
-            {
-                return Problem("Entity set 'PostContext.Posts'  is null.");
-            }
-            if (CheckInputInvalid(postDTO))
+            if (Validator.CheckInputInvalid(postDto))
             {
                 return Problem("One or more invalid inputs");
             }
 
-            //if (!await _userService.UserExistsAsync(postDTO.AuthorId))
-            //{
-            //    return Problem("User does not exist");
-            //}
-
             var post = new Post
             {
-                Title = postDTO.Title,
-                Description = postDTO.Description,
-                AuthorId = postDTO.AuthorId
+                Title = postDto.Title,
+                Description = postDto.Description,
+                AuthorId = postDto.AuthorId
             };
-            _context.Post.Add(post);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, PostToDTO(post));
+            await _postService.CreatePostAsync(post);
+
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, PostToDto(post));
         }
 
-        // DELETE: api/Posts/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePost(long id)
+        // PUT: api/Posts/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPost(long id, PostDTO postDto)
         {
-            if (_context.Post == null)
+            if (id != postDto.Id)
             {
-                return NotFound();
+                return BadRequest("The provided id parameter does not match the user's id.");
             }
-            var post = await _context.Post.FindAsync(id);
-            if (post == null)
+
+            var existingPost = await _postService.GetPostByIdAsync(id);
+
+            if (existingPost == null)
             {
                 return NotFound();
             }
 
-            _context.Post.Remove(post);
-            await _context.SaveChangesAsync();
+            existingPost.Title = postDto.Title;
+            existingPost.Description = postDto.Description;
+            existingPost.AuthorId = postDto.AuthorId;
+
+            await _postService.PutPostAsync(existingPost);
 
             return NoContent();
         }
 
-        private bool PostExists(long id)
+        
+        // DELETE: api/Posts/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(long id)
         {
-            return _context.Post.Any(e => e.Id == id);
+            var existingUser = await _postService.DeletePostAsync(id);
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            await _postService.DeletePostAsync(id);
+
+            return NoContent();
         }
     }
 }
