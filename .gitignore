@@ -121,3 +121,4 @@ fabric.properties
 /PostAPI/Post.db
 /PostAPI/Post.db-shm
 /PostAPI/Post.db-wal
+/Post.db
