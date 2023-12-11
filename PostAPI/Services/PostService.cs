@@ -14,20 +14,20 @@ namespace PostAPI.Services
             _PostRepository = PostRepository;
         }
 
-
-        public async Task<List<Post>> GetPostsAsync()
-        {
-            return await _PostRepository.GetPostsAsync();
-        }
-
         public async Task<Post> GetPostByIdAsync(long id)
         {
             return await _PostRepository.GetPostByIdAsync(id);
         }
 
-        public async Task CreatePostAsync(Post Post)
+        public async Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId)
+        {
+            return await _PostRepository.GetAllPostsInUserProfileAsync(authorId);
+        }
+
+        public async Task<Post> CreatePostAsync(Post Post)
         {
             await _PostRepository.CreatePostAsync(Post);
+            return Post;
         }
 
         public async Task<bool> PutPostAsync(Post Post)

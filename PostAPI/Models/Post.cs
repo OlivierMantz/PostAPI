@@ -10,7 +10,9 @@ namespace PostAPI.Models
         [Required]
         public string? Description { get; set; }
         [Required]
-        public long AuthorId { get; set; }
+        public string AuthorId { get; set; }
+        [Required]
+        public string? ImageUrl { get; set; }
 
     }
 }

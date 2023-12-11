@@ -6,7 +6,7 @@ namespace PostAPI.Utilities
 {
     public class Validator
     {
-        public static bool CheckInputInvalid(PostDTO postDTO) => postDTO == null || string.IsNullOrWhiteSpace(postDTO.Title) ||
-                string.IsNullOrWhiteSpace(postDTO.Description);
+        public static bool CheckInputInvalid(CreatePostDTO createPostDTO) => createPostDTO == null || string.IsNullOrWhiteSpace(createPostDTO.Title) ||
+                string.IsNullOrWhiteSpace(createPostDTO.Description);
     }
 }

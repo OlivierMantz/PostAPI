@@ -11,6 +11,8 @@ using PostAPI.Models.DTOs;
 using PostAPI.Services;
 
 using PostAPI.Utilities;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PostAPI.Controllers
 {
@@ -19,6 +21,11 @@ namespace PostAPI.Controllers
     public class PostsController : ControllerBase
     {
         private readonly IPostService _postService;
+
+        private string GetCurrentUserId()
+        {
+            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
 
         public PostsController(IPostService postService)
         {
@@ -32,60 +39,76 @@ namespace PostAPI.Controllers
                 Id = post.Id,
                 Title = post.Title,
                 Description = post.Description,
-                AuthorId = post.AuthorId
+                AuthorId = post.AuthorId,
+                ImageUrl = post.ImageUrl
             };
             return postDto;
         }
 
-        // GET: api/Posts
-        [HttpGet]
-        public async Task<ActionResult<List<PostDTO>>> GetPosts()
-        {
-            var posts = await _postService.GetPostsAsync();
-            var postDtos = posts.Select(PostToDto).ToList();
-            return Ok(postDtos);
-        }
-
         // GET: api/Posts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<PostDTO>> GetPost(long id)
+        public async Task<ActionResult<PostDTO>> GetPostByIdAsync(long id)
         {
             if (id < 0)
             {
                 return BadRequest("Invalid id parameter. The id must be a positive number.");
             }
 
-            var user = await _postService.GetPostByIdAsync(id);
+            var post = await _postService.GetPostByIdAsync(id);
 
-            if (user == null)
+            if (post == null)
             {
                 return NotFound("Post not found.");
             }
 
-            var userDto = PostToDto(user);
-            return Ok(userDto);
+            var postDto = PostToDto(post);
+            return Ok(postDto);
         }
+
+        // GET: api/Posts/Users/1
+        [HttpGet("users/{authorId}")]
+        public async Task<ActionResult<IEnumerable<PostDTO>>> GetAllPostsInUserProfileAsync(string authorId)
+        {
+            var posts = await _postService.GetAllPostsInUserProfileAsync(authorId);
+            var postDtos = posts.Select(PostToDto).ToList();
+            return Ok(postDtos);
+        }
+
+
 
         // POST: api/Posts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "User, Admin")]
         [HttpPost]
-        public async Task<ActionResult<PostDTO>> PostPost(PostDTO postDto)
+        public async Task<IActionResult> CreatePostAsync([FromBody] CreatePostDTO createPostDTO)
         {
-            if (Validator.CheckInputInvalid(postDto))
+            if (Validator.CheckInputInvalid(createPostDTO))
             {
                 return Problem("One or more invalid inputs");
             }
 
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
             var post = new Post
             {
-                Title = postDto.Title,
-                Description = postDto.Description,
-                AuthorId = postDto.AuthorId
+                Title = createPostDTO.Title,
+                Description = createPostDTO.Description,
+                AuthorId = userId,
+                ImageUrl = createPostDTO.ImageUrl,
             };
 
-            await _postService.CreatePostAsync(post);
+            var createdPost = await _postService.CreatePostAsync(post);
+            if (createdPost == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
 
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, PostToDto(post));
+            var createdPostDTO = PostToDto(createdPost);
+            return Ok(createdPostDTO);
         }
 
         // PUT: api/Posts/5
@@ -95,7 +118,7 @@ namespace PostAPI.Controllers
         {
             if (id != postDto.Id)
             {
-                return BadRequest("The provided id parameter does not match the user's id.");
+                return BadRequest("The provided id parameter does not match the post's id.");
             }
 
             var existingPost = await _postService.GetPostByIdAsync(id);
@@ -108,6 +131,8 @@ namespace PostAPI.Controllers
             existingPost.Title = postDto.Title;
             existingPost.Description = postDto.Description;
             existingPost.AuthorId = postDto.AuthorId;
+            existingPost.ImageUrl = postDto.ImageUrl;
+
 
             await _postService.PutPostAsync(existingPost);
 
@@ -116,13 +141,21 @@ namespace PostAPI.Controllers
 
 
         // DELETE: api/Posts/5
-        [HttpDelete("{id}")]
+        [Authorize(Roles = "User, Admin")]
+        [HttpDelete("{id:long}")]
         public async Task<IActionResult> DeletePost(long id)
         {
-            var existingUser = await _postService.DeletePostAsync(id);
-            if (existingUser == null)
+            var existingPost = await _postService.GetPostByIdAsync(id);
+            if (existingPost == null)
             {
                 return NotFound();
+            }
+
+            var currentUserId = GetCurrentUserId();
+
+            if (existingPost.AuthorId != currentUserId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
             }
 
             await _postService.DeletePostAsync(id);

@@ -29,21 +29,24 @@ public static class PrepDb
                     Id = 1,
                     Title = "Some picture",
                     Description = "#hashtag",
-                    AuthorId = 1,
+                    AuthorId = "1",
+                    ImageUrl = "test image",
                 },
                 new Post()
                 {
                     Id = 2,
                     Title = "Second Ansel Adams ",
                     Description = "#humble",
-                    AuthorId = 2,
+                    AuthorId = "1",
+                    ImageUrl = "test image",
                 },
                 new Post()
                 {
                     Id = 3,
                     Title = "#coolpic",
                     Description = "The most picture ever",
-                    AuthorId = 2,
+                    AuthorId = "2",
+                    ImageUrl = "test image",
                 }
             );
             context.SaveChanges();

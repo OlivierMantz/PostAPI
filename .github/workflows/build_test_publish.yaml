@@ -2,7 +2,7 @@ name: Lint Code, Build, Test and Publish
 
 on:
     push:
-        branches: [main, dev]
+        branches: [main, dev, db_auth]
     pull_request:
         branches: [main, dev]
 
@@ -92,4 +92,4 @@ jobs:
                   context: .
                   file: ./PostAPI/Dockerfile
                   push: true
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/post_api:latest
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/post_api:db_auth_local

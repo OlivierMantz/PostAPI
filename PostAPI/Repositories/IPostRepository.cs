@@ -6,9 +6,9 @@ namespace PostAPI.Repositories
 {
     public interface IPostRepository
     {
-        Task<List<Post>> GetPostsAsync();
         Task<Post> GetPostByIdAsync(long id);
-        Task CreatePostAsync(Post Post);
+        Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId);
+        Task<Post> CreatePostAsync(Post Post);
         Task<bool> PutPostAsync(Post Post);
         Task<bool> DeletePostAsync(long id);
         // Helper method
