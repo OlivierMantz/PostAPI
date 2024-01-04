@@ -6,9 +6,10 @@ namespace PostAPI.Services;
 
 public interface IPostService
 {
-    Task<List<Post>> GetPostsAsync();
-    Task<Post> GetPostByIdAsync(long id);
-    Task CreatePostAsync(Post Post);
+    Task<Post> GetPostByIdAsync(Guid id);
+    Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId);
+    Task<IEnumerable<Post>> GetAllPosts();
+    Task<Post> CreatePostAsync(Post Post);
     Task<bool> PutPostAsync(Post Post);
-    Task<bool> DeletePostAsync(long id);
+    Task<bool> DeletePostAsync(Guid id);
 }

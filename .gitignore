@@ -7,6 +7,7 @@
 /PostAPITests/v17
 /TestResults/
 /vs/
+/PostAPI/Migrations/
 
 # Created by https://www.toptal.com/developers/gitignore/api/rider,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=rider,visualstudiocode
@@ -118,3 +119,7 @@ fabric.properties
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/rider,visualstudiocode
+/PostAPI/Post.db
+/PostAPI/Post.db-shm
+/PostAPI/Post.db-wal
+/Post.db

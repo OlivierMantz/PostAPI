@@ -14,20 +14,24 @@ namespace PostAPI.Services
             _PostRepository = PostRepository;
         }
 
-
-        public async Task<List<Post>> GetPostsAsync()
-        {
-            return await _PostRepository.GetPostsAsync();
-        }
-
-        public async Task<Post> GetPostByIdAsync(long id)
+        public async Task<Post> GetPostByIdAsync(Guid id)
         {
             return await _PostRepository.GetPostByIdAsync(id);
         }
 
-        public async Task CreatePostAsync(Post Post)
+        public async Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId)
+        {
+            return await _PostRepository.GetAllPostsInUserProfileAsync(authorId);
+        }
+        public async Task<IEnumerable<Post>> GetAllPosts()
+        {
+            return await _PostRepository.GetAllPosts();
+        }
+
+        public async Task<Post> CreatePostAsync(Post Post)
         {
             await _PostRepository.CreatePostAsync(Post);
+            return Post;
         }
 
         public async Task<bool> PutPostAsync(Post Post)
@@ -35,12 +39,12 @@ namespace PostAPI.Services
             return await _PostRepository.PutPostAsync(Post);
         }
 
-        public async Task<bool> DeletePostAsync(long id)
+        public async Task<bool> DeletePostAsync(Guid id)
         {
             return await _PostRepository.DeletePostAsync(id);
         }
 
-        public async Task<bool> PostExistsAsync(long id)
+        public async Task<bool> PostExistsAsync(Guid id)
         {
             return await _PostRepository.PostExistsAsync(id);
         }

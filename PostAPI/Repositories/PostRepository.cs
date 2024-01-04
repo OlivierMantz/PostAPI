@@ -10,46 +10,53 @@ namespace PostAPI.Repositories
 {
     public class PostRepository : IPostRepository
     {
-        private readonly PostContext _PostContext;
+        private readonly ApplicationDbContext _PostContext;
 
-        public PostRepository(PostContext PostContext)
+        public PostRepository(ApplicationDbContext PostContext)
         {
             _PostContext = PostContext;
         }
 
-        public async Task<List<Post>> GetPostsAsync()
+        public async Task<Post> GetPostByIdAsync(Guid PostId)
         {
-            return await _PostContext.Post.ToListAsync();
+            return await _PostContext.Posts.FirstOrDefaultAsync(u => u.Id == PostId);
         }
 
-        public async Task<Post> GetPostByIdAsync(long id)
+        public async Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId)
         {
-            return await _PostContext.Post.FirstOrDefaultAsync(u => u.Id == id);
+            return await _PostContext.Posts
+                                 .Where(c => c.AuthorId == authorId)
+                                 .ToListAsync();
         }
-
-        public async Task CreatePostAsync(Post Post)
+        public async Task<IEnumerable<Post>> GetAllPosts()
+        {
+            return await _PostContext.Posts.ToListAsync();
+        }
+        public async Task<Post> CreatePostAsync(Post Post)
         {
             if (Post == null)
             {
                 throw new ArgumentNullException(nameof(Post));
             }
-            await _PostContext.Post.AddAsync(Post);
+            await _PostContext.Posts.AddAsync(Post);
             await _PostContext.SaveChangesAsync();
+
+            return Post;
         }
 
         public async Task<bool> PutPostAsync(Post Post)
         {
-            _PostContext.Post.Update(Post);
+            _PostContext.Posts.Update(Post);
             var updated = await _PostContext.SaveChangesAsync();
             return updated > 0;
         }
 
-        public async Task<bool> DeletePostAsync(long id)
+        public async Task<bool> DeletePostAsync(Guid PostId)
         {
-            var Post = await _PostContext.Post.FindAsync(id);
+            var Post = await _PostContext.Posts.FindAsync(PostId);
             if (Post != null)
             {
-                _PostContext.Post.Remove(Post);
+                _PostContext.Posts.Remove(Post);
                 var deleted = await _PostContext.SaveChangesAsync();
                 return deleted > 0;
             }
@@ -57,9 +64,9 @@ namespace PostAPI.Repositories
             return false;
         }
 
-        public async Task<bool> PostExistsAsync(long PostId)
+        public async Task<bool> PostExistsAsync(Guid PostId)
         {
-            return await _PostContext.Post.AnyAsync(u => u.Id == PostId);
+            return await _PostContext.Posts.AnyAsync(u => u.Id == PostId);
         }
     }
 }

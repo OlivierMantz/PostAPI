@@ -26,24 +26,27 @@ public static class PrepDb
             context.Post.AddRange(
                 new Post()
                 {
-                    Id = 1,
+                    Id = Guid.NewGuid(),
                     Title = "Some picture",
                     Description = "#hashtag",
-                    AuthorId = 1,
+                    AuthorId = "1",
+                    ImageFileName = "test image",
                 },
                 new Post()
                 {
-                    Id = 2,
+                    Id = Guid.NewGuid(),
                     Title = "Second Ansel Adams ",
                     Description = "#humble",
-                    AuthorId = 2,
+                    AuthorId = "1",
+                    ImageFileName = "test image",
                 },
                 new Post()
                 {
-                    Id = 3,
+                    Id = Guid.NewGuid(),
                     Title = "#coolpic",
                     Description = "The most picture ever",
-                    AuthorId = 2,
+                    AuthorId = "2",
+                    ImageFileName = "test image",
                 }
             );
             context.SaveChanges();
