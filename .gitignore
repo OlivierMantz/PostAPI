@@ -7,6 +7,7 @@
 /PostAPITests/v17
 /TestResults/
 /vs/
+/PostAPI/Migrations/
 
 # Created by https://www.toptal.com/developers/gitignore/api/rider,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=rider,visualstudiocode

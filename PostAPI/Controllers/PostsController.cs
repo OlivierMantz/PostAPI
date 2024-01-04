@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using PostAPI.Models;
 using PostAPI.Models.DTOs;
 using PostAPI.Services;
-
 using PostAPI.Utilities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -40,16 +39,17 @@ namespace PostAPI.Controllers
                 Title = post.Title,
                 Description = post.Description,
                 AuthorId = post.AuthorId,
-                ImageUrl = post.ImageUrl
+                ImageFileName = post.ImageFileName,
+                FileExtension = post.FileExtension,
             };
             return postDto;
         }
 
         // GET: api/Posts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<PostDTO>> GetPostByIdAsync(long id)
+        public async Task<ActionResult<PostDTO>> GetPostByIdAsync(Guid id)
         {
-            if (id < 0)
+            if (id == Guid.Empty)
             {
                 return BadRequest("Invalid id parameter. The id must be a positive number.");
             }
@@ -74,7 +74,22 @@ namespace PostAPI.Controllers
             return Ok(postDtos);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllPostsAsync()
+        {
+            try
+            {
+                var posts = await _postService.GetAllPosts();
+                var postDTOs = posts.Select(post => PostToDto(post)).ToList();
 
+                return Ok(postDTOs);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details here
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from the database");
+            }
+        }
 
         // POST: api/Posts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -98,7 +113,8 @@ namespace PostAPI.Controllers
                 Title = createPostDTO.Title,
                 Description = createPostDTO.Description,
                 AuthorId = userId,
-                ImageUrl = createPostDTO.ImageUrl,
+                ImageFileName = createPostDTO.ImageFileName,
+                FileExtension = createPostDTO.FileExtension,
             };
 
             var createdPost = await _postService.CreatePostAsync(post);
@@ -114,7 +130,7 @@ namespace PostAPI.Controllers
         // PUT: api/Posts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPost(long id, PostDTO postDto)
+        public async Task<IActionResult> PutPost(Guid id, PostDTO postDto)
         {
             if (id != postDto.Id)
             {
@@ -131,7 +147,7 @@ namespace PostAPI.Controllers
             existingPost.Title = postDto.Title;
             existingPost.Description = postDto.Description;
             existingPost.AuthorId = postDto.AuthorId;
-            existingPost.ImageUrl = postDto.ImageUrl;
+            existingPost.ImageFileName = postDto.ImageFileName;
 
 
             await _postService.PutPostAsync(existingPost);
@@ -142,8 +158,8 @@ namespace PostAPI.Controllers
 
         // DELETE: api/Posts/5
         [Authorize(Roles = "User, Admin")]
-        [HttpDelete("{id:long}")]
-        public async Task<IActionResult> DeletePost(long id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeletePost(Guid id)
         {
             var existingPost = await _postService.GetPostByIdAsync(id);
             if (existingPost == null)

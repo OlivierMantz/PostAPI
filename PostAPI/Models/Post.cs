@@ -4,7 +4,7 @@ namespace PostAPI.Models
     public class Post
     {
         [Key]
-        public long Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         [Required]
         public string? Title { get; set; }
         [Required]
@@ -12,7 +12,8 @@ namespace PostAPI.Models
         [Required]
         public string AuthorId { get; set; }
         [Required]
-        public string? ImageUrl { get; set; }
-
+        public string? ImageFileName { get; set; }
+        [Required]
+        public string? FileExtension { get; set; }
     }
 }
