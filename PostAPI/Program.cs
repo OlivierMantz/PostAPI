@@ -112,7 +112,8 @@ public class Program
                 context.Posts.AddRange(
                     new Post
                     {
-                        Id = Guid.NewGuid(), 
+                        //new Guid generation: Guid.NewGuid()
+                        Id = new Guid("15db589f-d535-4180-b94b-7b3d23f67a70"), 
                         Title = "30's",
                         Description = "30's",
                         AuthorId = "auth0|656ddebb4efc549093dcfd61",
@@ -121,7 +122,7 @@ public class Program
                     },
                     new Post
                     {
-                        Id = Guid.NewGuid(),
+                        Id = new Guid("1eff8b0d-6e89-49c5-9b1e-7e940368553c"),
                         Title = "70's retro",
                         Description = "Alien Isolation",
                         AuthorId = "auth0|656ddebb4efc549093dcfd61",
@@ -130,7 +131,7 @@ public class Program
                     },
                     new Post
                     {
-                        Id = Guid.NewGuid(),
+                        Id = new Guid("99206e76-910b-46c8-a1cb-2821a6260c3b"),
                         Title = ".avif image",
                         Description = "My new wallpaper",
                         AuthorId = "auth0|656ddebb4efc549093dcfd61",

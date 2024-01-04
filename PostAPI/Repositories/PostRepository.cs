@@ -17,9 +17,9 @@ namespace PostAPI.Repositories
             _PostContext = PostContext;
         }
 
-        public async Task<Post> GetPostByIdAsync(Guid id)
+        public async Task<Post> GetPostByIdAsync(Guid PostId)
         {
-            return await _PostContext.Posts.FirstOrDefaultAsync(u => u.Id == id);
+            return await _PostContext.Posts.FirstOrDefaultAsync(u => u.Id == PostId);
         }
 
         public async Task<IEnumerable<Post>> GetAllPostsInUserProfileAsync(string authorId)
@@ -51,9 +51,9 @@ namespace PostAPI.Repositories
             return updated > 0;
         }
 
-        public async Task<bool> DeletePostAsync(Guid id)
+        public async Task<bool> DeletePostAsync(Guid PostId)
         {
-            var Post = await _PostContext.Posts.FindAsync(id);
+            var Post = await _PostContext.Posts.FindAsync(PostId);
             if (Post != null)
             {
                 _PostContext.Posts.Remove(Post);
