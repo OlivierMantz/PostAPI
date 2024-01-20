@@ -11,6 +11,14 @@ namespace PostAPI.Data
         }
 
         public DbSet<Post> Posts { get; set; }
-
+        public async Task CleanInvalidPostsAsync()
+        {
+            var invalidPosts = Posts.Where(p => p.AuthorId == null);
+            if (await invalidPosts.AnyAsync())
+            {
+                Posts.RemoveRange(invalidPosts);
+                await SaveChangesAsync();
+            }
+        }
     }
 }

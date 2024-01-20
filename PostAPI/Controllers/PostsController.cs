@@ -23,7 +23,13 @@ namespace PostAPI.Controllers
 
         private string GetCurrentUserId()
         {
-            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // Remove curly brackets if present
+                userId = userId.Trim(new char[] { '{', '}' });
+            }
+            return userId;
         }
 
         public PostsController(IPostService postService)
@@ -97,11 +103,6 @@ namespace PostAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePostAsync([FromBody] CreatePostDTO createPostDTO)
         {
-            if (Validator.CheckInputInvalid(createPostDTO))
-            {
-                return Problem("One or more invalid inputs");
-            }
-
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
             {
@@ -114,7 +115,7 @@ namespace PostAPI.Controllers
                 Description = createPostDTO.Description,
                 AuthorId = userId,
                 ImageFileName = createPostDTO.ImageFileName,
-                FileExtension = createPostDTO.FileExtension,
+                FileExtension = createPostDTO.FileExtension
             };
 
             var createdPost = await _postService.CreatePostAsync(post);
@@ -126,6 +127,7 @@ namespace PostAPI.Controllers
             var createdPostDTO = PostToDto(createdPost);
             return Ok(createdPostDTO);
         }
+
 
         // PUT: api/Posts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

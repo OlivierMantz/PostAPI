@@ -34,14 +34,16 @@ namespace PostAPI.Repositories
         }
         public async Task<Post> CreatePostAsync(Post Post)
         {
-            if (Post == null)
-            {
-                throw new ArgumentNullException(nameof(Post));
-            }
-            await _PostContext.Posts.AddAsync(Post);
-            await _PostContext.SaveChangesAsync();
-
+            Console.WriteLine("Post contents", Post);
             return Post;
+            //if (Post == null || Post.AuthorId == null)
+            //{
+            //    throw new ArgumentNullException(nameof(Post));
+            //}
+            //await _PostContext.Posts.AddAsync(Post);
+            //await _PostContext.SaveChangesAsync();
+
+            //return Post;
         }
 
         public async Task<bool> PutPostAsync(Post Post)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using PostAPI.Models;
+using PostAPI.Models.DTOs;
 using PostAPI.Repositories;
 
 namespace PostAPI.Services
@@ -28,10 +29,20 @@ namespace PostAPI.Services
             return await _PostRepository.GetAllPosts();
         }
 
-        public async Task<Post> CreatePostAsync(Post Post)
+        public async Task<Post> CreatePostAsync(Post post)
         {
-            await _PostRepository.CreatePostAsync(Post);
-            return Post;
+            var newPost = new Post
+            {
+                Title = post.Title,
+                Description = post.Description,
+                AuthorId = post.AuthorId,
+                ImageFileName = post.ImageFileName,
+                FileExtension = post.FileExtension
+            };
+
+            await _PostRepository.CreatePostAsync(newPost); 
+
+            return newPost;
         }
 
         public async Task<bool> PutPostAsync(Post Post)

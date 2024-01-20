@@ -12,6 +12,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using PostAPI.Models;
 using System;
+using RabbitMQ.Client;
+using PostAPI.Models.DTOs;
+using System.Text.Json;
 
 public class Program
 {
@@ -21,10 +24,12 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQSettings"));
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowSpecificOrigin",
-                builder => builder.WithOrigins("http://localhost:5173")
+                builder => builder.WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:5242/")
                     .AllowAnyHeader()
                     .AllowAnyMethod());
         });
@@ -42,6 +47,10 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddScoped<IPostService, PostService>();
+
+
+builder.Services.AddHostedService<RabbitMQConsumerService>();
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -54,8 +63,6 @@ public class Program
                 RoleClaimType = "https://sublimewebapp.me/roles"
             };
         });
-
-        var rabbitMQSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>();
 
         var app = builder.Build();
 
@@ -76,14 +83,12 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
         app.Run();
-
-        var cache = app.Services.GetService<IMemoryCache>();
-        cache.Set("SecurityKey", secKey);
     }
 
     public class RabbitMQSettings
     {
         public string Hostname { get; set; }
+        public string QueueName { get; set; }
     }
 
     static void CreateDB(WebApplication app)
@@ -97,6 +102,8 @@ public class Program
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.EnsureCreated();
             dbContext.Database.Migrate();
+            //dbContext.CleanInvalidPostsAsync().Wait();
+
         }
     }
 

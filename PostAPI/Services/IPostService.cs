@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using PostAPI.Models;
+using PostAPI.Models.DTOs;
 
 namespace PostAPI.Services;
 
